@@ -1,0 +1,54 @@
+module top_fif(
+    input clk,
+    input rst_n,
+    input wr_en,
+    input rd_en,
+    input [15:0] data_in,
+
+    output [15:0] LED
+);
+
+wire [15:0] data_out;
+wire empty;
+wire full;
+wire reset_n;
+
+wire wr_pulse;
+wire rd_pulse;
+
+// Active-low reset for FIFO
+assign reset_n = ~rst_n;
+
+// LED connections
+assign LED[13:0] = data_out[13:0];
+assign LED[14] = empty;
+assign LED[15] = full;
+
+// Write button pulse generator
+pulse_gen wr_pg(
+    .clk(clk),
+    .btn(wr_en),
+    .pulse(wr_pulse)
+);
+
+// Read button pulse generator
+pulse_gen rd_pg(
+    .clk(clk),
+    .btn(rd_en),
+    .pulse(rd_pulse)
+);
+
+// FIFO Instance
+fifo_sync uut(
+    .clk(clk),
+    .rst_n(reset_n),
+    .cs(1'b1),
+    .wr_en(wr_pulse),
+    .rd_en(rd_pulse),
+    .data_in(data_in),
+    .data_out(data_out),
+    .empty(empty),
+    .full(full)
+);
+
+endmodule
